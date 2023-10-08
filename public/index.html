@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BLE geo App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="root">
+    <div class="mapContainer">
+        <h1 class="mapTitle">LAT: <span class="mapLat">0</span> | LONG: <span class="mapLong">0</span></h1>
+        <iframe
+            id="mapIFrame"
+            width="600"
+            height="450"
+            style="border:0"
+            loading="lazy"
+            allowfullscreen
+        src="https://www.google.com/maps/embed/v1/place?q=41.303921,-81.901693&key=AIzaSyA6J2BYuY_JHtYTrND5mq7a2F4Q4qaHxPY">
+
+        </iframe>
+    </div>
+</div>
+<script src="logic.js"></script>
+</body>
+</html>

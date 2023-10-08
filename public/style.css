@@ -1,0 +1,14 @@
+body {
+    margin: 0;
+    background-color: #81b3b6;
+}
+
+
+.mapContainer {
+    text-align: center;
+}
+
+.mapTitle {
+    margin: 2rem auto;
+    font-family: Verdana, sans-serif;
+}
