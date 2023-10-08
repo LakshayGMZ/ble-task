@@ -1,28 +1,36 @@
-const bleno = require('bleno');
+const bleno = require('@abandonware/bleno');
+const {Descriptor} = require("@abandonware/bleno");
+const axios = require("axios");
 
-// Define a custom service and characteristic UUID
-const serviceUUID = 'CUSTOM BLE TEST';
-const characteristicUUID = 'GPS DATA';
+const serviceUUID = 'c395c2ed-ce49-460d-869e-e85e1272c158';
+const characteristicUUID = '6262626200001000800000805f9b34fb';
 
-// Define the custom characteristic value
-let characteristicValue = Buffer.from('Hello, Bluetooth!');
-
-// Create a custom characteristic
 const customCharacteristic = new bleno.Characteristic({
     uuid: characteristicUUID,
-    properties: ['write', "notify"], // You can customize these properties
-    // value: characteristicValue,
-
-    // Handle read requests from the central device
+    properties: ['write'],
+    descriptors: [new Descriptor({
+        uuid: '2901',
+        value: 'GPS SERVICE SHARE'
+    })],
     onReadRequest: (offset, callback) => {
         console.log('Read request received.');
         callback(bleno.Characteristic.RESULT_SUCCESS, characteristicValue);
     },
 
-    // Handle write requests from the central device
+
     onWriteRequest: (data, offset, withoutResponse, callback) => {
-        console.log('Write request received with data:', data.toString());
-        characteristicValue = data; // Update the characteristic value
+        console.log('Data received:', data.toString('utf8'));
+        const geoData = String(data.toString('utf8')).split(',')
+        const finaldata = {
+            latitude: geoData[0].trim(),
+            longitude: geoData[1].trim()
+        };
+
+        axios.post("https://blebackend.lakshaygmz.repl.co/map/postData", {
+            latitude: finaldata.latitude,
+            longitude: finaldata.longitude
+        }).then(res => console.log(res.data))
+
         callback(bleno.Characteristic.RESULT_SUCCESS);
     },
 });
@@ -33,7 +41,7 @@ const customService = new bleno.PrimaryService({
     characteristics: [customCharacteristic],
 });
 
-// Set the services on the peripheral
+
 bleno.on('stateChange', (state) => {
     if (state === 'poweredOn') {
         bleno.setServices([customService], (error) => {
@@ -49,7 +57,7 @@ bleno.on('stateChange', (state) => {
     }
 });
 
-// Handle peripheral advertising events
+
 bleno.on('advertisingStart', (error) => {
     if (!error) {
         console.log('Peripheral advertising started.');
@@ -58,17 +66,17 @@ bleno.on('advertisingStart', (error) => {
     }
 });
 
-// Handle central device connections
+
 bleno.on('accept', (clientAddress) => {
     console.log(`Connected to central device at address: ${clientAddress}`);
 });
 
-// Handle central device disconnections
+
 bleno.on('disconnect', (clientAddress) => {
     console.log(`Disconnected from central device at address: ${clientAddress}`);
 });
 
-// Handle peripheral advertising events
+
 bleno.on('advertisingStart', (error) => {
     if (!error) {
         console.log('Peripheral advertising started.');
@@ -77,17 +85,17 @@ bleno.on('advertisingStart', (error) => {
     }
 });
 
-// Handle peripheral advertising stop events
+
 bleno.on('advertisingStop', () => {
     console.log('Peripheral advertising stopped.');
 });
 
-// Handle peripheral advertising error events
+
 bleno.on('advertisingError', (error) => {
     console.error('Peripheral advertising error:', error);
 });
 
-// Gracefully exit the program on Ctrl+C
+
 process.on('SIGINT', () => {
     console.log('Stopping peripheral...');
     bleno.stopAdvertising(() => {
